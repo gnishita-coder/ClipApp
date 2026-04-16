@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "209940971378",
+    "project_id": "clipapp-eb039",
+    "storage_bucket": "clipapp-eb039.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:209940971378:android:f9b2c6efeaa80aae95a7eb",
+        "android_client_info": {
+          "package_name": "com.clipapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbGZVf7RRzlrZBzT3fCwQVHs5Qq5bP8iY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

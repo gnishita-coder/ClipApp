@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -8,17 +8,25 @@ import {
     StyleSheet,
     TouchableOpacity,
     Image,
+    Alert,
 
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import auth from '@react-native-firebase/auth';
 
 const OTP = () => {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [isVerified, setIsVerified] = useState(false);
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const route = useRoute<RouteProp<RootStackParamList, 'OTP'>>();
+    const [timer, setTimer] = useState(45);
+    const [isActive, setIsActive] = useState(false);
 
+    // ✅ FIX: correct param name + use state
+    const { confirmation: initialConfirmation, phone } = route.params;
+    const [confirmation, setConfirmation] = useState(initialConfirmation);
 
     const inputs = useRef<Array<TextInput | null>>([]);
 
@@ -32,12 +40,10 @@ const OTP = () => {
                 inputs.current[index + 1]?.focus();
             }
 
-            // ✅ ADD THIS
             const joinedOtp = newOtp.join('');
+
             if (joinedOtp.length === 6) {
-                setTimeout(() => {
-                    setIsVerified(true);
-                }, 300);
+                verifyOtp(joinedOtp);
             }
         }
     };
@@ -48,28 +54,61 @@ const OTP = () => {
         }
     };
 
+    const verifyOtp = async (code: string) => {
+        try {
+            // ✅ FIX: use correct confirmation object
+            await confirmation.confirm(code);
+
+            setIsVerified(true);
+
+        } catch (error) {
+            console.log("Invalid OTP:", error);
+            Alert.alert("Invalid OTP ❌");
+        }
+    };
+
     useEffect(() => {
-    if (isVerified) {
-        const timer = setTimeout(() => {
-            navigation.navigate('Home');
-        }, 2000); // ⏱️ 2 sec delay (adjust if needed)
+        let interval;
 
-        return () => clearTimeout(timer);
-    }
-}, [isVerified]);
+        if (isActive && timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prev) => prev - 1);
+            }, 1000);
+        } else if (timer === 0) {
+            setIsActive(false);
+        }
 
+        return () => clearInterval(interval);
+    }, [isActive, timer]);
+
+    const handleResend = async () => {
+        try {
+            const newConfirm = await auth().signInWithPhoneNumber(phone);
+
+            setTimer(45);
+            setIsActive(true);
+            setOtp(['', '', '', '', '', '']);
+            inputs.current[0]?.focus();
+
+            // ✅ FIX: update state instead of route params
+            setConfirmation(newConfirm);
+
+        } catch (error) {
+            Alert.alert("Failed to resend OTP");
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
             {isVerified ? (
                 <View style={styles.successContainer}>
-                   <LottieView
-    source={require('../lottie/orange.json')}
-    autoPlay
-    loop={false}
-    style={styles.lottie}
-    onAnimationFinish={() => navigation.navigate('Home')}
-/>
+                    <LottieView
+                        source={require('../lottie/orange.json')}
+                        autoPlay
+                        loop={false}
+                        style={styles.lottie}
+                        onAnimationFinish={() => navigation.navigate('CarSelection')}
+                    />
 
                     <Text style={styles.successTitle}>
                         Phone Number Verified
@@ -92,16 +131,13 @@ const OTP = () => {
 
                         <Text style={styles.title}>Phone Verification</Text>
 
-                        {/* Empty view to balance center alignment */}
                         <View style={{ width: 32 }} />
                     </View>
 
-                    {/* Subtitle */}
                     <Text style={styles.subtitle}>
                         Enter 6 digit verification code sent to your phone number
                     </Text>
 
-                    {/* OTP Boxes */}
                     <View style={styles.otpContainer}>
                         {otp.map((digit, index) => (
                             <TextInput
@@ -119,9 +155,12 @@ const OTP = () => {
                         ))}
                     </View>
 
-                    {/* Resend */}
-                    <TouchableOpacity>
-                        <Text style={styles.resend}>Resend Code</Text>
+                    <TouchableOpacity onPress={handleResend} disabled={isActive}>
+                        <Text style={styles.resend}>
+                            {isActive
+                                ? `Resend in 0:${timer < 10 ? `0${timer}` : timer}`
+                                : 'Resend Code'}
+                        </Text>
                     </TouchableOpacity>
                 </>
             )}
@@ -180,7 +219,6 @@ const styles = StyleSheet.create({
     backIcon: {
         width: 32,
         height: 32,
-
         marginBottom: 40,
     },
     header: {
@@ -191,25 +229,20 @@ const styles = StyleSheet.create({
     },
     successContainer: {
         flex: 1,
-        //justifyContent: 'center',
         alignItems: 'center',
         marginTop:100
     },
-
     lottie: {
         width: 200,
         height: 200,
         marginBottom: 20,
     },
-
     successTitle: {
         color: '#fff',
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 10,
-        
     },
-
     successSub: {
         color: '#ccc',
         fontSize: 15,
