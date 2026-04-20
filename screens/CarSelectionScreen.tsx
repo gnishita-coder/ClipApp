@@ -16,9 +16,8 @@ import {
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import LottieView from 'lottie-react-native';
-// ❌ REMOVED BlurView import
-// import { BlurView } from '@react-native-community/blur';
 import { RootStackParamList } from '../types/navigation';
+import firestore from '@react-native-firebase/firestore';
 
 const { width } = Dimensions.get('window');
 
@@ -54,6 +53,7 @@ const CarSelectionScreen = () => {
   const lottieTranslateY = useRef(new Animated.Value(600)).current;
   const lottieTranslateX = useRef(new Animated.Value(120)).current;
   const lottieScale = useRef(new Animated.Value(1)).current;
+  const [cars, setCars] = useState([]);
 
   const [searchText, setSearchText] = useState('');
   const hasShownModal = useRef(false);
@@ -65,6 +65,29 @@ const CarSelectionScreen = () => {
   const LOTTIE_START_X = 120;
   const LOTTIE_START_Y = 0;
   const LOTTIE_MODAL_Y = 120;
+
+// Fetch data from Firestore
+  useEffect(() => {
+  const fetchCars = async () => {
+    try {
+      const snapshot = await firestore()
+        .collection('car_brands')
+        .get();
+
+      const list = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setCars(list);
+    } catch (error) {
+      console.log('Error fetching cars:', error);
+    }
+  };
+
+  fetchCars();
+}, []);
+
 
   useEffect(() => {
     Animated.parallel([
@@ -160,7 +183,9 @@ const CarSelectionScreen = () => {
       <View style={styles.shadowWrapper}>
         <View style={styles.circle}>
           <View style={styles.innerCircle}>
-            <Image source={item.image} style={styles.image} />
+            <Image
+             source={{ uri: item.image }}
+             style={styles.image} />
           </View>
         </View>
       </View>
@@ -185,7 +210,7 @@ const CarSelectionScreen = () => {
       <View style={styles.searchContainer}>
         <TextInput
           placeholder="Search car..."
-          placeholderTextColor="#aaa"
+          placeholderTextColor="#94A3B8"
           value={searchText}
           onChangeText={setSearchText}
           style={styles.searchInput}
@@ -193,8 +218,6 @@ const CarSelectionScreen = () => {
       </View>
 
       <View style={{ flex: 1 }}>
-        {/* ❌ Removed BlurView */}
-
         <Animated.View
           style={{
             transform: [{ scale: gridScale }],
@@ -202,7 +225,9 @@ const CarSelectionScreen = () => {
           }}
         >
           <FlatList
-            data={filteredData}
+            data={cars.filter(item =>
+              item.name.toLowerCase().includes(searchText.toLowerCase())
+            )}
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
             numColumns={3}
@@ -250,7 +275,7 @@ export default CarSelectionScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#2D2E2F',
+    backgroundColor: '#0B1120', // Very dark blue background
   },
 
   headerRow: {
@@ -264,23 +289,19 @@ const styles = StyleSheet.create({
   backIcon: {
     width: 32,
     height: 32,
+   // tintColor: '#F59E0B', // Amber/Gold accent
   },
 
-  // 🔥 NEW LOTTIE STYLE
   lottieIcon: {
     width: 60,
     height: 60,
-    
-    
-    
   },
 
   title: {
     fontSize: 20,
-    color: '#fff',
+    color: '#FFFFFF', // White text
     fontWeight: 'bold',
-    textAlign:'center',
-    
+    textAlign: 'center',
   },
 
   card: {
@@ -295,36 +316,33 @@ const styles = StyleSheet.create({
     borderRadius: ITEM_SIZE / 2,
     justifyContent: 'center',
     alignItems: 'center',
-
-    shadowColor: '#f87838',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.6,
+    shadowColor: '#F59E0B', // Amber/Gold glow
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
     shadowRadius: 12,
-    elevation: 14,
+    elevation: 8,
   },
 
   circle: {
     width: ITEM_SIZE,
     height: ITEM_SIZE,
-    borderRadius: ITEM_SIZE / 2,
-    backgroundColor: '#1E293B',
+    borderRadius: 100,
+    backgroundColor: '#1E293B', // Original slate color
     justifyContent: 'center',
     alignItems: 'center',
-
     borderWidth: 1.5,
-    borderColor: 'rgba(56,189,248,0.5)',
+    borderColor: '#F59E0B', // Solid gold border
   },
 
   innerCircle: {
     width: '85%',
     height: '85%',
     borderRadius: 100,
-    backgroundColor: '#0F172A',
+    backgroundColor: '#334155', // Lighter slate
     justifyContent: 'center',
     alignItems: 'center',
-
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#F59E0B', // Solid gold border
   },
 
   image: {
@@ -341,29 +359,25 @@ const styles = StyleSheet.create({
 
   overlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
 
   glassCard: {
     width: '85%',
     padding: 20,
     borderRadius: 20,
-
-    backgroundColor: 'rgba(255,255,255,0.08)',
-
+    backgroundColor: '#1E293B', // Slate color background
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-
+    borderColor: '#F59E0B', // Solid gold border
     elevation: 12,
-
-    shadowColor: '#000',
+    shadowColor: '#F59E0B',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 20,
   },
 
   modalTitle: {
-    color: '#fff',
+    color: '#FFFFFF', // White text
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 20,
@@ -375,43 +389,43 @@ const styles = StyleSheet.create({
     padding: 12,
     marginVertical: 8,
     borderRadius: 12,
-
-    backgroundColor: 'rgba(255,255,255,0.15)',
-
+    backgroundColor: '#334155', // Lighter slate
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+    borderColor: '#F59E0B', // Solid gold border
   },
 
   buttonText: {
-    color: '#fff',
+    color: '#F59E0B', // Amber/Gold text
     textAlign: 'center',
     fontWeight: 'bold',
   },
+
   topLottieWrapper: {
-  position: 'absolute',
-  top: '32%',
-  zIndex: 10,
-  alignItems: 'center',
-  justifyContent: 'center',
-},
+    position: 'absolute',
+    top: '32%',
+    zIndex: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
-topLottie: {
-  width: 120,
-  height: 120,
-},
-searchContainer: {
-  marginHorizontal: 20,
-  marginTop: 15,
-},
+  topLottie: {
+    width: 120,
+    height: 120,
+  },
 
-searchInput: {
-  backgroundColor: '#1E293B',
-  borderRadius: 12,
-  paddingHorizontal: 15,
-  height: 45,
-  color: '#fff',
+  searchContainer: {
+    marginHorizontal: 20,
+    marginTop: 15,
+  },
 
-  borderWidth: 1,
-  borderColor: '#334155',
-},
+  searchInput: {
+    backgroundColor: '#1E293B', // Slate color
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    height: 45,
+    color: '#FFFFFF', // White text
+    borderWidth: 1,
+    borderColor: '#F59E0B', // Solid gold border
+    placeholderTextColor: '#94A3B8',
+  },
 });

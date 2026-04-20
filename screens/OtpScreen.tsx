@@ -173,19 +173,19 @@ export default OTP;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#2C2C2C',
+        backgroundColor: '#0B1120', // Very dark blue background (matching main screens)
         paddingHorizontal: 20,
         paddingTop: 60,
     },
     title: {
-        color: '#fff',
+        color: '#FFFFFF', // White text
         fontSize: 19,
         textAlign: 'center',
         marginBottom: 40,
         fontWeight: 'semibold'
     },
     subtitle: {
-        color: '#fff',
+        color: '#FFFFFF', // White text
         fontSize: 22,
         textAlign: 'left',
         marginBottom: 30,
@@ -202,15 +202,21 @@ const styles = StyleSheet.create({
     otpBox: {
         width: 50,
         height: 50,
-        borderWidth: 1,
-        borderColor: '#666',
-        borderRadius: 8,
+        borderWidth: 2, // Thicker border for better visibility
+        borderColor: '#F59E0B', // Solid gold border
+        borderRadius: 12, // Slightly more rounded
         textAlign: 'center',
-        fontSize: 18,
-        color: '#fff',
+        fontSize: 20,
+        color: '#FFFFFF', // White text
+        backgroundColor: '#1E293B', // Slate background
+        shadowColor: '#F59E0B',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
     },
     resend: {
-        color: '#FE8723',
+        color: '#F59E0B', // Amber/Gold accent
         textAlign: 'center',
         marginTop: 35,
         fontSize: 14,
@@ -219,6 +225,7 @@ const styles = StyleSheet.create({
     backIcon: {
         width: 32,
         height: 32,
+        tintColor: '#F59E0B', // Amber/Gold accent
         marginBottom: 40,
     },
     header: {
@@ -230,7 +237,7 @@ const styles = StyleSheet.create({
     successContainer: {
         flex: 1,
         alignItems: 'center',
-        marginTop:100
+        marginTop: 100
     },
     lottie: {
         width: 200,
@@ -238,13 +245,13 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     successTitle: {
-        color: '#fff',
+        color: '#FFFFFF', // White text
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 10,
     },
     successSub: {
-        color: '#ccc',
+        color: '#94A3B8', // Light gray for subtext
         fontSize: 15,
         textAlign: 'center',
         lineHeight: 20,

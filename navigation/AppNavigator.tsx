@@ -43,6 +43,7 @@ export default function AppNavigator() {
         {user ? (
           // ✅ LOGGED IN FLOW
           <>
+          
             <Stack.Screen name="CarSelection" component={CarSelectionScreen} />
             <Stack.Screen name="CarDetail" component={CarDetailScreen} />
             <Stack.Screen name="Home" component={HomeScreen} />
